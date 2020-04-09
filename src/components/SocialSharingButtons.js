@@ -6,15 +6,25 @@ import styles from "./SocialSharingButtons.module.scss";
 export default function SocialSharingButtons() {
   return (
     <div className={styles.SocialSharingButtons}>
-      <Twitter solid small message={PAGE_TITLE} link="https://covid19cv.info" />
-      <Facebook solid small link="https://covid19cv.info" />
+      <Twitter
+        solid
+        small
+        message={PAGE_TITLE}
+        link="https://www.covid19cv.info"
+      />
+      <Facebook solid small link="https://www.covid19cv.info" />
       <Linkedin
         solid
         small
         message={PAGE_TITLE}
-        link="https://covid19cv.info"
+        link="https://www.covid19cv.info"
       />
-      <Mail solid small subject={PAGE_TITLE} link="https://covid19cv.info" />
+      <Mail
+        solid
+        small
+        subject={PAGE_TITLE}
+        link="https://www.covid19cv.info"
+      />
     </div>
   );
 }
