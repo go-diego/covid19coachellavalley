@@ -9,7 +9,7 @@ import SocialSharingButtons from "../components/SocialSharingButtons";
 export const PAGE_DESCRIPTION =
   "Get the latest Coronavirus (COVID-19) updates in the Coachella Valley";
 export const PAGE_TITLE = "COVID-19 Updates for the Coachella Valley";
-const PAGE_IMAGE = "https://covid19cv.info/opengraph-image.png?v=1";
+const PAGE_IMAGE = "https://covid19cv.info/og-image.png";
 
 const cities = [
   {
