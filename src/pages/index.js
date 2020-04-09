@@ -242,6 +242,7 @@ function IndexPage(props) {
                       style={{ overflow: "hidden" }}
                     >
                       <img
+                        alt="Riverside County Logo"
                         className="is-rounded"
                         style={{ height: "100%", objectFit: "cover" }}
                         src="/images/riverside-county.png"
@@ -291,6 +292,7 @@ function IndexPage(props) {
                             style={{ overflow: "hidden" }}
                           >
                             <img
+                              alt={`${datum.NAME} image`}
                               className="is-rounded"
                               style={{ height: "100%", objectFit: "cover" }}
                               src={
