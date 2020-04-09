@@ -173,8 +173,8 @@ function IndexPage(props) {
         <meta name="twitter:title" content={PAGE_TITLE} />
         <meta name="twitter:description" content={PAGE_DESCRIPTION} />
         <meta property="og:image" content={PAGE_IMAGE} />
-        <meta property="og:image:width" content="536" />
-        <meta property="og:image:height" content="160" />
+        <meta property="og:image:width" content="525" />
+        <meta property="og:image:height" content="251" />
         <meta name="twitter:image" content={`${PAGE_IMAGE}`} />
         <link rel="canonical" href="https://covid19cv.info" />
       </Head>
