@@ -165,18 +165,16 @@ function IndexPage(props) {
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="description" content={PAGE_DESCRIPTION} />
         <meta property="og:type" content="website" />
-        <meta name="og:title" property="og:title" content={PAGE_TITLE} />
-        <meta
-          name="og:description"
-          property="og:description"
-          content={PAGE_DESCRIPTION}
-        />
+        <meta property="og:title" content={PAGE_TITLE} />
+        <meta property="og:description" content={PAGE_DESCRIPTION} />
         <meta property="og:site_name" content={PAGE_TITLE} />
         <meta property="og:url" content="https://www.covid19cv.info" />
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" content={PAGE_TITLE} />
         <meta name="twitter:description" content={PAGE_DESCRIPTION} />
         <meta property="og:image" content={PAGE_IMAGE} />
+        <meta property="og:image:width" content="536" />
+        <meta property="og:image:height" content="160" />
         <meta name="twitter:image" content={PAGE_IMAGE} />
         <link rel="canonical" href="https://covid19cv.info" />
       </Head>
