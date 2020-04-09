@@ -7,7 +7,7 @@ export default function SocialSharingButtons() {
   return (
     <div className={styles.SocialSharingButtons}>
       <Twitter solid small message={PAGE_TITLE} link="https://covid19cv.info" />
-      <Facebook solid small link={PAGE_TITLE} />
+      <Facebook solid small link="https://covid19cv.info" />
       <Linkedin
         solid
         small
