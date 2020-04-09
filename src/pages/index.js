@@ -9,7 +9,7 @@ import SocialSharingButtons from "../components/SocialSharingButtons";
 export const PAGE_DESCRIPTION =
   "Get the latest Coronavirus (COVID-19) updates in the Coachella Valley";
 export const PAGE_TITLE = "COVID-19 Updates for the Coachella Valley";
-const PAGE_IMAGE = "/opengraph-image.png";
+const PAGE_IMAGE = "https://covid19cv.info/opengraph-image.png";
 
 const cities = [
   {
@@ -175,7 +175,7 @@ function IndexPage(props) {
         <meta property="og:image" content={PAGE_IMAGE} />
         <meta property="og:image:width" content="536" />
         <meta property="og:image:height" content="160" />
-        <meta name="twitter:image" content={PAGE_IMAGE} />
+        <meta name="twitter:image" content={`${PAGE_IMAGE}`} />
         <link rel="canonical" href="https://covid19cv.info" />
       </Head>
       <HeroSection2
