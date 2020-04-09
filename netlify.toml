@@ -1,0 +1,9 @@
+[build]
+  publish = "out"
+command = "npm run export"
+
+# Catch all other requests that don't match a file
+[[redirects]]
+  from = "/*"
+  to = "/404.html"
+  status = 200
