@@ -15,9 +15,9 @@ const analytics = Analytics({
         trackingId: process.env.GA_ID
       })
       */
-    // googleAnalyticsPlugin({
-    //   trackingId: process.env.GA_ID
-    // })
+    googleAnalyticsPlugin({
+      trackingId: process.env.GA_ID
+    })
   ]
 });
 
