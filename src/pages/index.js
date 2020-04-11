@@ -2,13 +2,17 @@ import React from "react";
 import Head from "next/head";
 import ky from "ky/umd";
 import { format } from "date-fns";
+import Footer from "./../components/Footer";
 import HeroSection2 from "../components/HeroSection2";
 import Loader from "../components/Loader";
 import SocialSharingButtons from "../components/SocialSharingButtons";
+import InstallPrompt from "../components/InstallPrompt";
+import InstallInstructionsForSafari from "../components/InstallInstructionsForSafari";
+import useAddToHomeScreenPrompt from "../components/useAddToHomeScreenPrompt";
 
 export const PAGE_DESCRIPTION =
   "Get the latest Coronavirus (COVID-19) updates for the Coachella Valley";
-export const PAGE_TITLE = "COVID-19 Updates for the Coachella Valley";
+export const PAGE_TITLE = "COVID-19 Coachella Valley Update";
 const PAGE_IMAGE = "https://covid19cv.info/og-image.png";
 
 const cities = [
@@ -86,65 +90,119 @@ const covidCasesMetadataByCityUrl = `https://services1.arcgis.com/pWmBUdSlVpXStH
 const covidCasesByCountyUrl =
   "https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services/ncov_cases_US/FeatureServer/0/query?f=json&where=(Combined_Key LIKE '%Riverside%' AND Province_State='California')&outFields=*";
 
-function IndexPage(props) {
+function IndexPage() {
+  const [prompt, promptToInstall] = useAddToHomeScreenPrompt();
   const [data, setData] = React.useState(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState(false);
+  const [showInstallPrompt, setShowInstallPrompt] = React.useState(false);
+  const [showInstallInstructions, setShowInstallInstructions] = React.useState(
+    true
+  );
+
+  const isSafari = () => {
+    if (!process.browser) return false;
+    return !!window.ApplePaySession;
+  };
+
+  const isSafariStandAlone = () =>
+    process.browser ? Boolean(navigator.standalone) : false;
+
+  const isInStandAloneMode = () => {
+    if (!process.browser) return false;
+    return (
+      isSafariStandAlone() || matchMedia("(display-mode: standalone)").matches
+    );
+  };
+
+  async function getData() {
+    try {
+      const covidCasesByCity = ky.post(covidCasesByCityUrl).json();
+      // const covidCasesMetadataByCity = ky
+      //   .post(covidCasesMetadataByCityUrl)
+      //   .json();
+      const covidCasesByCounty = ky.post(covidCasesByCountyUrl).json();
+
+      const [
+        covidCasesByCityResponse,
+        //covidCasesMetadataByCityResponse,
+        covidCasesByCountyResponse
+      ] = await Promise.all([
+        covidCasesByCity,
+        //covidCasesMetadataByCity,
+        covidCasesByCounty
+      ]);
+
+      //console.log("covidCasesByCityResponse", covidCasesByCityResponse);
+      // console.log(
+      //   "covidCasesMetadataByCityResponse",
+      //   covidCasesMetadataByCityResponse
+      // );
+      //console.log("covidCasesByCountyResponse", covidCasesByCountyResponse);
+
+      if (covidCasesByCityResponse.error && covidCasesByCountyResponse)
+        setError(true);
+
+      if (
+        !covidCasesByCityResponse.error &&
+        !covidCasesByCountyResponse.error
+      ) {
+        setData({
+          cdpData: covidCasesByCityResponse.features.map(
+            (feature) => feature.attributes
+          ),
+          countyData: covidCasesByCountyResponse.features[0].attributes
+        });
+      }
+    } catch (e) {
+      console.log("OOPS", e);
+      setError(true);
+    }
+    setIsLoading(false);
+  }
 
   React.useEffect(() => {
-    async function getData() {
-      try {
-        const covidCasesByCity = ky.post(covidCasesByCityUrl).json();
-        // const covidCasesMetadataByCity = ky
-        //   .post(covidCasesMetadataByCityUrl)
-        //   .json();
-        const covidCasesByCounty = ky.post(covidCasesByCountyUrl).json();
-
-        const [
-          covidCasesByCityResponse,
-          //covidCasesMetadataByCityResponse,
-          covidCasesByCountyResponse
-        ] = await Promise.all([
-          covidCasesByCity,
-          //covidCasesMetadataByCity,
-          covidCasesByCounty
-        ]);
-
-        //console.log("covidCasesByCityResponse", covidCasesByCityResponse);
-        // console.log(
-        //   "covidCasesMetadataByCityResponse",
-        //   covidCasesMetadataByCityResponse
-        // );
-        //console.log("covidCasesByCountyResponse", covidCasesByCountyResponse);
-
-        if (covidCasesByCityResponse.error && covidCasesByCountyResponse)
-          setError(true);
-
-        if (
-          !covidCasesByCityResponse.error &&
-          !covidCasesByCountyResponse.error
-        ) {
-          setData({
-            cdpData: covidCasesByCityResponse.features.map(
-              (feature) => feature.attributes
-            ),
-            countyData: covidCasesByCountyResponse.features[0].attributes
-          });
-        }
-      } catch (e) {
-        console.log("OOPS", e);
-        setError(true);
-      }
-
-      setIsLoading(false);
+    if (isLoading) {
+      getData();
     }
-    getData();
+  }, [isLoading]);
+
+  React.useEffect(() => {
+    if (prompt) {
+      setShowInstallPrompt(true);
+    }
+  }, [prompt]);
+
+  React.useEffect(() => {
+    const onAppInstalled = () => {
+      console.log("appinstalled");
+      setShowInstallPrompt(false);
+      setShowInstallInstructions(false);
+    };
+    window.addEventListener("appinstalled", onAppInstalled);
+
+    return () => window.removeEventListener("appinstalled", onAppInstalled);
   }, []);
 
   return (
-    <>
+    <main
+      className={`${
+        showInstallPrompt ||
+        (showInstallInstructions && !isSafariStandAlone() && isSafari())
+          ? "has-navbar-fixed-bottom"
+          : ""
+      }`}
+    >
       <Head>
         <title>{PAGE_TITLE}</title>
+        <meta
+          name="keywords"
+          content="COVID-19, Coronavirus, Coachella Valley, Riverside County"
+        />
+        <meta
+          name="viewport"
+          content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover"
+        />
         <link
           rel="apple-touch-icon"
           sizes="180x180"
@@ -177,6 +235,115 @@ function IndexPage(props) {
         <meta property="og:image:height" content="528" />
         <meta name="twitter:image" content={PAGE_IMAGE} />
         <link rel="canonical" href="https://covid19cv.info" />
+        <meta name="theme-color" content="#FFDD57" />
+        <meta name="apple-touch-fullscreen" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta
+          name="apple-mobile-web-app-title"
+          content="COVID-19 Coachella Valley Update"
+        />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-2048-2732.png"
+          media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-2732-2048.png"
+          media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-1668-2388.png"
+          media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-2388-1668.png"
+          media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-1668-2224.png"
+          media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-2224-1668.png"
+          media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-1536-2048.png"
+          media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-2048-1536.png"
+          media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-1242-2688.png"
+          media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-2688-1242.png"
+          media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-1125-2436.png"
+          media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-2436-1125.png"
+          media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-828-1792.png"
+          media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-1792-828.png"
+          media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-1242-2208.png"
+          media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-2208-1242.png"
+          media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-750-1334.png"
+          media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-1334-750.png"
+          media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-640-1136.png"
+          media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/apple-splash-1136-640.png"
+          media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
+        />
       </Head>
       <HeroSection2
         color="warning"
@@ -185,6 +352,18 @@ function IndexPage(props) {
         title="COVID-19 Updates 🦠"
         subtitle="For the Coachella Valley"
       />
+      <section className="has-background-dark">
+        <div
+          className="is-flex has-text-light"
+          style={{ justifyContent: "center", alignItems: "center" }}
+        >
+          <span className="heading is-marginless">Stay Home</span>
+          <span style={{ margin: "0 0.25rem" }}>&bull;</span>
+          <span className="heading is-marginless">Save Lives</span>
+          <span style={{ margin: "0 0.25rem" }}>&bull;</span>
+          <span className="heading is-marginless">Help Flatten the Curve</span>
+        </div>
+      </section>
       <section className="section">
         <div className="container">
           <p style={{ textAlign: "justify", marginBottom: "1.5rem" }}>
@@ -208,7 +387,8 @@ function IndexPage(props) {
                 Error<span>☠️</span>
               </p>
               <p className="has-text-centered">
-                Oops! Something went wrong. Please let Diego know at{" "}
+                Oops! Something went wrong. Please refresh the app. If all else
+                fails, please let Diego know at{" "}
                 <a className="has-text-primary" href="mailto:hola@godiego.me">
                   hola@godiego.me
                 </a>
@@ -231,7 +411,23 @@ function IndexPage(props) {
                 new Date(data.countyData.Last_Update),
                 "MM/dd/yyyy @ hh:mm aa"
               )}`}</p>
-
+              {isInStandAloneMode() && (
+                <button
+                  title="Refresh Data"
+                  onClick={() => setIsLoading(true)}
+                  className="button is-small is-dark is-outlined"
+                  style={{
+                    borderRadius: "50%",
+                    position: "absolute",
+                    right: "3px",
+                    top: "3px"
+                  }}
+                >
+                  <span className="icon is-small">
+                    <i className="fas fa-sync-alt"></i>
+                  </span>
+                </button>
+              )}
               <div className="box has-background-light">
                 <article className="media">
                   <figure className="media-left">
@@ -342,7 +538,24 @@ function IndexPage(props) {
           )}
         </div>
       </section>
-    </>
+      {showInstallPrompt && (
+        <InstallPrompt
+          handleHide={() => setShowInstallPrompt(false)}
+          handleInstallApp={promptToInstall}
+        />
+      )}
+      {showInstallInstructions && !isSafariStandAlone() && isSafari() && (
+        <InstallInstructionsForSafari
+          handleHide={() => setShowInstallInstructions(false)}
+        />
+      )}
+      <Footer
+        color="white"
+        size="medium"
+        backgroundImage=""
+        backgroundImageOpacity={1}
+      ></Footer>
+    </main>
   );
 }
 
