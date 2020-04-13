@@ -71,6 +71,14 @@ const cities = [
   {
     name: "Indio",
     image: "images/indio.png"
+  },
+  {
+    name: "Oasis",
+    image: ""
+  },
+  {
+    name: "Sky Valley",
+    image: "/images/sky-valley.jpg"
   }
 ];
 
