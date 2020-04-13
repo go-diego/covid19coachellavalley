@@ -17,6 +17,7 @@ function Footer(props) {
           government health departments, and local media reports and is compiled
           and maintained by{" "}
           <a
+            className="has-text-link"
             href="https://systems.jhu.edu/"
             target="_target"
             rel="noopener noreferrer"
@@ -29,11 +30,12 @@ function Footer(props) {
           Data for cities and unincorporated communities of the Coachella Valley
           is compiled and maintained by{" "}
           <a
+            className="has-text-link"
             href="https://rivcoph.org/"
             target="_target"
             rel="noopener noreferrer"
           >
-            Riverside University Health System-Public Health.
+            Riverside County Department of Public Health.
           </a>
         </small>
 
