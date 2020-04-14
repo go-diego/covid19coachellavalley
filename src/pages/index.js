@@ -98,9 +98,17 @@ const covidCasesMetadataByCityUrl = `https://services1.arcgis.com/pWmBUdSlVpXStH
 const covidCasesByCountyUrl =
   "https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services/ncov_cases_US/FeatureServer/0/query?f=json&where=(Combined_Key LIKE '%Riverside%' AND Province_State='California')&outFields=*";
 
+// NOTE: ES2020 will have support for this
+const reflect = (p) =>
+  p.then(
+    (data) => ({ data, status: "fulfilled" }),
+    (data) => ({ data, status: "rejected" })
+  );
+
 function IndexPage() {
   const [prompt, promptToInstall] = useAddToHomeScreenPrompt();
-  const [data, setData] = React.useState(null);
+  const [cityLevelData, setCityLevelData] = React.useState(null);
+  const [countyLevelData, setCountyLevelData] = React.useState(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState(false);
   const [showInstallPrompt, setShowInstallPrompt] = React.useState(false);
@@ -129,39 +137,42 @@ function IndexPage() {
       // const covidCasesMetadataByCity = ky
       //   .post(covidCasesMetadataByCityUrl)
       //   .json();
-      //const covidCasesByCounty = ky.post(covidCasesByCountyUrl).json();
+      const covidCasesByCounty = ky.post(covidCasesByCountyUrl).json();
+
+      const promises = [
+        covidCasesByCity,
+        //covidCasesMetadataByCity,
+        covidCasesByCounty
+      ].map(reflect);
+
+      const response = await Promise.all(promises);
 
       const [
-        covidCasesByCityResponse
+        covidCasesByCityResponse,
         //covidCasesMetadataByCityResponse,
-        //covidCasesByCountyResponse
-      ] = await Promise.all([
-        covidCasesByCity
-        //covidCasesMetadataByCity,
-        //covidCasesByCounty
-      ]);
+        covidCasesByCountyResponse
+      ] = response;
 
-      //console.log("covidCasesByCityResponse", covidCasesByCityResponse);
-      // console.log(
-      //   "covidCasesMetadataByCityResponse",
-      //   covidCasesMetadataByCityResponse
-      // );
-      //console.log("covidCasesByCountyResponse", covidCasesByCountyResponse);
+      // if both fail, show error page
+      if (
+        (covidCasesByCityResponse.data.error ||
+          covidCasesByCityResponse.status === "rejected") &&
+        (covidCasesByCountyResponse.data.error ||
+          covidCasesByCountyResponse.status === "rejected")
+      )
+        setError(true);
 
-      // if (covidCasesByCityResponse.error && covidCasesByCountyResponse.error)
-      //   setError(true);
+      if (!covidCasesByCountyResponse.data.error)
+        setCountyLevelData(
+          covidCasesByCountyResponse.data.features[0].attributes
+        );
 
-      console.log("covidCasesByCityResponse", covidCasesByCityResponse);
-      if (covidCasesByCityResponse.error) setError(true);
-
-      if (!covidCasesByCityResponse.error) {
-        setData({
-          cdpData: covidCasesByCityResponse.features.map(
+      if (!covidCasesByCityResponse.data.error)
+        setCityLevelData(
+          covidCasesByCityResponse.data.features.map(
             (feature) => feature.attributes
           )
-          //countyData: covidCasesByCountyResponse.features[0].attributes
-        });
-      }
+        );
     } catch (e) {
       console.log("OOPS", e);
       setError(true);
@@ -409,16 +420,18 @@ function IndexPage() {
               <Loader />
             </>
           )}
-          {!isLoading && data && (
+          {!error && !isLoading && (
             <div style={{ width: "100%" }}>
               <div style={{ marginBottom: "1rem" }}>
                 <span className="heading">Share ❤️</span>
                 <SocialSharingButtons />
               </div>
-              {/* <p className="heading has-text-weight-bold">{`Last Updated ${format(
-                new Date(data.countyData.Last_Update),
-                "MM/dd/yyyy @ hh:mm aa"
-              )}`}</p> */}
+              {countyLevelData && (
+                <p className="heading has-text-weight-bold">{`Last Updated ${format(
+                  new Date(countyLevelData.Last_Update),
+                  "MM/dd/yyyy @ hh:mm aa"
+                )}`}</p>
+              )}
               {isInStandAloneMode() && (
                 <button
                   title="Refresh Data"
@@ -436,112 +449,149 @@ function IndexPage() {
                   </span>
                 </button>
               )}
-              {/* <div className="box has-background-light">
-                <article className="media">
-                  <figure className="media-left">
-                    <p
-                      className="image is-64x64"
+              {(countyLevelData && (
+                <div className="box has-background-light">
+                  <article className="media">
+                    <figure className="media-left">
+                      <p
+                        className="image is-64x64"
+                        style={{ overflow: "hidden" }}
+                      >
+                        <img
+                          alt="Riverside County Logo"
+                          className="is-rounded"
+                          style={{ height: "100%", objectFit: "cover" }}
+                          src="/images/riverside-county.png"
+                        />
+                      </p>
+                    </figure>
+                    <div
+                      className="media-content"
                       style={{ overflow: "hidden" }}
                     >
-                      <img
-                        alt="Riverside County Logo"
-                        className="is-rounded"
-                        style={{ height: "100%", objectFit: "cover" }}
-                        src="/images/riverside-county.png"
-                      />
-                    </p>
-                  </figure>
-                  <div className="media-content" style={{ overflow: "hidden" }}>
-                    <div className="content">
-                      <p className="is-size-4 is-size-5-mobile">
-                        {`${data.countyData.Admin2} County`}
-                      </p>
-                    </div>
-                    <div className="field is-grouped is-grouped-multiline">
-                      <div className="control">
-                        <div className="tags has-addons">
-                          <span className="tag has-background-grey-lighter">
-                            Cases
-                          </span>
-                          <span className="tag is-dark">
-                            {data.countyData.Confirmed}
-                          </span>
-                        </div>
+                      <div className="content">
+                        <p className="is-size-4 is-size-5-mobile">
+                          {`${countyLevelData.Admin2} County`}
+                        </p>
                       </div>
-                      <div className="control">
-                        <div className="tags has-addons">
-                          <span className="tag has-background-grey-lighter">
-                            Deaths
-                          </span>
-                          <span className="tag is-danger">
-                            {data.countyData.Deaths}
-                          </span>
+                      <div className="field is-grouped is-grouped-multiline">
+                        <div className="control">
+                          <div className="tags has-addons">
+                            <span className="tag has-background-grey-lighter">
+                              Cases
+                            </span>
+                            <span className="tag is-dark">
+                              {countyLevelData.Confirmed}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="control">
+                          <div className="tags has-addons">
+                            <span className="tag has-background-grey-lighter">
+                              Deaths
+                            </span>
+                            <span className="tag is-danger">
+                              {countyLevelData.Deaths}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </article>
-              </div> */}
-              <div className="box has-background-light">
-                {data.cdpData
-                  .sort((a, b) => a.NAME.toLowerCase() > b.NAME.toLowerCase())
-                  .map((datum, index) => {
-                    return (
-                      <article key={index} className="media">
-                        <figure className="media-left">
-                          <p
-                            className="image is-64x64"
+                  </article>
+                </div>
+              )) || (
+                <div className="box has-background-light">
+                  <p className="heading has-text-danger">Oops!</p>
+                  <p>
+                    For some reason, county data is unavailable at the moment.
+                    Please try again later. If issues persist, please let Diego
+                    know at{" "}
+                    <a
+                      className="has-text-primary"
+                      href="mailto:hola@godiego.me"
+                    >
+                      hola@godiego.me
+                    </a>
+                  </p>
+                </div>
+              )}
+              {(cityLevelData && (
+                <div className="box has-background-light">
+                  {cityLevelData
+                    .sort((a, b) => a.NAME.toLowerCase() > b.NAME.toLowerCase())
+                    .map((datum, index) => {
+                      return (
+                        <article key={index} className="media">
+                          <figure className="media-left">
+                            <p
+                              className="image is-64x64"
+                              style={{ overflow: "hidden" }}
+                            >
+                              <img
+                                alt={`${datum.NAME} image`}
+                                className="is-rounded"
+                                style={{ height: "100%", objectFit: "cover" }}
+                                src={
+                                  cities.filter(
+                                    (city) => city.name === datum.NAME
+                                  )[0].image ||
+                                  "https://bulma.io/images/placeholders/128x128.png"
+                                }
+                              />
+                            </p>
+                          </figure>
+                          <div
+                            className="media-content"
                             style={{ overflow: "hidden" }}
                           >
-                            <img
-                              alt={`${datum.NAME} image`}
-                              className="is-rounded"
-                              style={{ height: "100%", objectFit: "cover" }}
-                              src={
-                                cities.filter(
-                                  (city) => city.name === datum.NAME
-                                )[0].image ||
-                                "https://bulma.io/images/placeholders/128x128.png"
-                              }
-                            />
-                          </p>
-                        </figure>
-                        <div
-                          className="media-content"
-                          style={{ overflow: "hidden" }}
-                        >
-                          <div className="content">
-                            <p className="is-size-4 is-size-5-mobile">
-                              {datum.NAME}
-                            </p>
-                          </div>
-                          <div className="field is-grouped is-grouped-multiline">
-                            <div className="control">
-                              <div className="tags has-addons">
-                                <span className="tag has-background-grey-lighter">
-                                  Cases
-                                </span>
-                                <span className="tag is-dark">
-                                  {datum.Point_Count}
-                                </span>
-                              </div>
+                            <div className="content">
+                              <p className="is-size-4 is-size-5-mobile">
+                                {datum.NAME}
+                              </p>
                             </div>
-                            <div className="control">
-                              <div className="tags has-addons">
-                                <span className="tag has-background-grey-lighter">
-                                  Deaths
-                                </span>
-                                <span className="tag is-danger">
-                                  {datum.Sum_Deceased}
-                                </span>
+                            <div className="field is-grouped is-grouped-multiline">
+                              <div className="control">
+                                <div className="tags has-addons">
+                                  <span className="tag has-background-grey-lighter">
+                                    Cases
+                                  </span>
+                                  <span className="tag is-dark">
+                                    {datum.Point_Count}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="control">
+                                <div className="tags has-addons">
+                                  <span className="tag has-background-grey-lighter">
+                                    Deaths
+                                  </span>
+                                  <span className="tag is-danger">
+                                    {datum.Sum_Deceased}
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </article>
-                    );
-                  })}
-              </div>
+                        </article>
+                      );
+                    })}
+                </div>
+              )) || (
+                <div className="box has-background-light">
+                  <p className="heading has-text-danger">Oops!</p>
+                  <p>
+                    For some reason, city/community data is unavailable at the
+                    moment. Please try again later. If issues persist, please
+                    let Diego know at{" "}
+                    <a
+                      className="has-text-primary"
+                      href="mailto:hola@godiego.me"
+                    >
+                      hola@godiego.me
+                    </a>
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
