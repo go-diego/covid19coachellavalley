@@ -129,16 +129,16 @@ function IndexPage() {
       // const covidCasesMetadataByCity = ky
       //   .post(covidCasesMetadataByCityUrl)
       //   .json();
-      const covidCasesByCounty = ky.post(covidCasesByCountyUrl).json();
+      //const covidCasesByCounty = ky.post(covidCasesByCountyUrl).json();
 
       const [
-        covidCasesByCityResponse,
+        covidCasesByCityResponse
         //covidCasesMetadataByCityResponse,
-        covidCasesByCountyResponse
+        //covidCasesByCountyResponse
       ] = await Promise.all([
-        covidCasesByCity,
+        covidCasesByCity
         //covidCasesMetadataByCity,
-        covidCasesByCounty
+        //covidCasesByCounty
       ]);
 
       //console.log("covidCasesByCityResponse", covidCasesByCityResponse);
@@ -148,18 +148,18 @@ function IndexPage() {
       // );
       //console.log("covidCasesByCountyResponse", covidCasesByCountyResponse);
 
-      if (covidCasesByCityResponse.error && covidCasesByCountyResponse)
-        setError(true);
+      // if (covidCasesByCityResponse.error && covidCasesByCountyResponse.error)
+      //   setError(true);
 
-      if (
-        !covidCasesByCityResponse.error &&
-        !covidCasesByCountyResponse.error
-      ) {
+      console.log("covidCasesByCityResponse", covidCasesByCityResponse);
+      if (covidCasesByCityResponse.error) setError(true);
+
+      if (!covidCasesByCityResponse.error) {
         setData({
           cdpData: covidCasesByCityResponse.features.map(
             (feature) => feature.attributes
-          ),
-          countyData: covidCasesByCountyResponse.features[0].attributes
+          )
+          //countyData: covidCasesByCountyResponse.features[0].attributes
         });
       }
     } catch (e) {
@@ -415,10 +415,10 @@ function IndexPage() {
                 <span className="heading">Share ❤️</span>
                 <SocialSharingButtons />
               </div>
-              <p className="heading has-text-weight-bold">{`Last Updated ${format(
+              {/* <p className="heading has-text-weight-bold">{`Last Updated ${format(
                 new Date(data.countyData.Last_Update),
                 "MM/dd/yyyy @ hh:mm aa"
-              )}`}</p>
+              )}`}</p> */}
               {isInStandAloneMode() && (
                 <button
                   title="Refresh Data"
@@ -436,7 +436,7 @@ function IndexPage() {
                   </span>
                 </button>
               )}
-              <div className="box has-background-light">
+              {/* <div className="box has-background-light">
                 <article className="media">
                   <figure className="media-left">
                     <p
@@ -481,7 +481,7 @@ function IndexPage() {
                     </div>
                   </div>
                 </article>
-              </div>
+              </div> */}
               <div className="box has-background-light">
                 {data.cdpData
                   .sort((a, b) => a.NAME.toLowerCase() > b.NAME.toLowerCase())
