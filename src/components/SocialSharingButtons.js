@@ -1,6 +1,6 @@
 import React from "react";
 import { Twitter, Facebook, Linkedin, Mail } from "react-social-sharing";
-import { PAGE_TITLE } from "../pages/index";
+import { PAGE_TITLE } from "./AppHead";
 import styles from "./SocialSharingButtons.module.scss";
 
 export default function SocialSharingButtons() {
