@@ -81,7 +81,7 @@ if (!self.define) {
     });
   };
 }
-define("./sw.js",['./workbox-4534c1eb'], function (workbox) { 'use strict';
+define("./sw.js",['./workbox-07e3fe34'], function (workbox) { 'use strict';
 
   /**
   * Welcome to your Workbox-powered service worker!
@@ -96,11 +96,7 @@ define("./sw.js",['./workbox-4534c1eb'], function (workbox) { 'use strict';
   */
 
   importScripts();
-  self.addEventListener('message', event => {
-    if (event.data && event.data.type === 'SKIP_WAITING') {
-      self.skipWaiting();
-    }
-  });
+  workbox.skipWaiting();
   workbox.clientsClaim();
   /**
    * The precacheAndRoute() method efficiently caches and responds to
@@ -116,7 +112,7 @@ define("./sw.js",['./workbox-4534c1eb'], function (workbox) { 'use strict';
     "revision": "fd38c26e5868171cf58387cd48fd71f4"
   }, {
     "url": "/_next/static/runtime/main.js",
-    "revision": "9e97187eba954c1b86664373ae1663ae"
+    "revision": "d0487b2d63bbb53099bc20b864cdce9f"
   }, {
     "url": "/_next/static/runtime/main.js.map",
     "revision": "2ce58859e85d0fa8e29212061c587464"
@@ -128,14 +124,86 @@ define("./sw.js",['./workbox-4534c1eb'], function (workbox) { 'use strict';
     "revision": "82dca635a629d8ab38c3ad85b2ad65a2"
   }, {
     "url": "/_next/static/runtime/webpack.js",
-    "revision": "8a168d841d90a398e89124b265a3bc01"
+    "revision": "5844f6389ee459dc04d9d21a64e8663d"
   }, {
     "url": "/_next/static/runtime/webpack.js.map",
-    "revision": "cb2acbab7bbaea3de9a2caa98dd17712"
+    "revision": "d2f21e8ae2426a39428446482b194080"
   }], {
     "ignoreURLParametersMatching": [/ts/]
   });
   workbox.cleanupOutdatedCaches();
+  workbox.registerRoute(/^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i, new workbox.CacheFirst({
+    "cacheName": "google-fonts",
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 4,
+      maxAgeSeconds: 31536000,
+      purgeOnQuotaError: true
+    })]
+  }), 'GET');
+  workbox.registerRoute(/^https:\/\/use\.fontawesome\.com\/releases\/.*/i, new workbox.CacheFirst({
+    "cacheName": "font-awesome",
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 1,
+      maxAgeSeconds: 31536000,
+      purgeOnQuotaError: true
+    })]
+  }), 'GET');
+  workbox.registerRoute(/\.(?:eot|otf|ttc|ttf|woff|woff2|font.css)$/i, new workbox.StaleWhileRevalidate({
+    "cacheName": "static-font-assets",
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 4,
+      maxAgeSeconds: 604800,
+      purgeOnQuotaError: true
+    })]
+  }), 'GET');
+  workbox.registerRoute(/\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i, new workbox.StaleWhileRevalidate({
+    "cacheName": "static-image-assets",
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 64,
+      maxAgeSeconds: 86400,
+      purgeOnQuotaError: true
+    })]
+  }), 'GET');
+  workbox.registerRoute(/\.(?:js)$/i, new workbox.NetworkFirst({
+    "cacheName": "static-js-assets",
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 16,
+      maxAgeSeconds: 86400,
+      purgeOnQuotaError: true
+    })]
+  }), 'GET');
+  workbox.registerRoute(/\.(?:html)$/i, new workbox.NetworkFirst({
+    "cacheName": "static-html-assets",
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 16,
+      maxAgeSeconds: 86400,
+      purgeOnQuotaError: true
+    })]
+  }), 'GET');
+  workbox.registerRoute(/\.(?:css|less)$/i, new workbox.StaleWhileRevalidate({
+    "cacheName": "static-style-assets",
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 16,
+      maxAgeSeconds: 86400,
+      purgeOnQuotaError: true
+    })]
+  }), 'GET');
+  workbox.registerRoute(/\.(?:json|xml|csv)$/i, new workbox.StaleWhileRevalidate({
+    "cacheName": "static-data-assets",
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 16,
+      maxAgeSeconds: 86400,
+      purgeOnQuotaError: true
+    })]
+  }), 'GET');
+  workbox.registerRoute(/.*/i, new workbox.StaleWhileRevalidate({
+    "cacheName": "others",
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 16,
+      maxAgeSeconds: 86400,
+      purgeOnQuotaError: true
+    })]
+  }), 'GET');
 
 });
 //# sourceMappingURL=sw.js.map
