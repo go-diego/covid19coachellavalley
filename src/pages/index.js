@@ -88,8 +88,8 @@ const getCitiesQuery = () => {
   return citiesQS;
 };
 
-const covidCasesByCityUrl = `https://services1.arcgis.com/pWmBUdSlVpXStHU6/arcgis/rest/services/COVID_CASES_CDP_PublicView/FeatureServer/1/query?f=json&where=(${getCitiesQuery()})&outFields=*`;
-const covidCasesMetadataByCityUrl = `https://services1.arcgis.com/pWmBUdSlVpXStHU6/arcgis/rest/services/COVID_CASES_CDP_PublicView/FeatureServer/0/query?f=json&where=(${getCitiesQuery()})&outFields=*&groupByFieldsForStatistics=Age_Stat`;
+const covidCasesByCityUrl = `https://services1.arcgis.com/pWmBUdSlVpXStHU6/arcgis/rest/services/COVID_CASES_CDP_Public/FeatureServer/0/query?f=json&where=(${getCitiesQuery()})&outFields=*`;
+const covidCasesMetadataByCityUrl = `https://services1.arcgis.com/pWmBUdSlVpXStHU6/arcgis/rest/services/COVID_CASES_CDP_Public/FeatureServer/0/query?f=json&where=(${getCitiesQuery()})&outFields=*&groupByFieldsForStatistics=Age_Stat`;
 const covidCasesByCountyUrl =
   "https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services/ncov_cases_US/FeatureServer/0/query?f=json&where=(Combined_Key LIKE '%Riverside%' AND Province_State='California')&outFields=*";
 
