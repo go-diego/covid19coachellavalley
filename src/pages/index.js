@@ -80,7 +80,7 @@ const cities = [
 const getCitiesQuery = () => {
   let qs = "";
   const citiesQS = cities
-    .map((city) => city.name)
+    .map(city => city.name)
     .reduce((acc, curr, index) => {
       if (index !== cities.length - 1) return acc + `NAME='${curr}' OR `;
       return acc + `NAME='${curr}'`;
@@ -88,16 +88,16 @@ const getCitiesQuery = () => {
   return citiesQS;
 };
 
-const covidCasesByCityUrl = `https://services1.arcgis.com/pWmBUdSlVpXStHU6/arcgis/rest/services/COVID_CASES_CDP_Public/FeatureServer/0/query?f=json&where=(${getCitiesQuery()})&outFields=*`;
+const covidCasesByCityUrl = `https://services1.arcgis.com/pWmBUdSlVpXStHU6/arcgis/rest/services/Riverside_County_COVID19_Cases_Public/FeatureServer/1/query?f=json&where=(${getCitiesQuery()})&outFields=*`;
 const covidCasesMetadataByCityUrl = `https://services1.arcgis.com/pWmBUdSlVpXStHU6/arcgis/rest/services/COVID_CASES_CDP_Public/FeatureServer/0/query?f=json&where=(${getCitiesQuery()})&outFields=*&groupByFieldsForStatistics=Age_Stat`;
 const covidCasesByCountyUrl =
   "https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services/ncov_cases_US/FeatureServer/0/query?f=json&where=(Combined_Key LIKE '%Riverside%' AND Province_State='California')&outFields=*";
 
 // NOTE: ES2020 will have support for this
-const reflect = (p) =>
+const reflect = p =>
   p.then(
-    (data) => ({ data, status: "fulfilled" }),
-    (data) => ({ data, status: "rejected" })
+    data => ({ data, status: "fulfilled" }),
+    data => ({ data, status: "rejected" })
   );
 
 function IndexPage() {
@@ -165,7 +165,7 @@ function IndexPage() {
       if (!covidCasesByCityResponse.data.error)
         setCityLevelData(
           covidCasesByCityResponse.data.features.map(
-            (feature) => feature.attributes
+            feature => feature.attributes
           )
         );
     } catch (e) {
@@ -377,7 +377,7 @@ function IndexPage() {
                                 style={{ height: "100%", objectFit: "cover" }}
                                 src={
                                   cities.filter(
-                                    (city) => city.name === datum.NAME
+                                    city => city.name === datum.NAME
                                   )[0].image ||
                                   "https://bulma.io/images/placeholders/128x128.png"
                                 }
