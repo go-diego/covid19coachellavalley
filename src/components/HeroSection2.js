@@ -18,16 +18,6 @@ function HeroSection2(props) {
           spaced={true}
           className="has-text-centered"
         ></SectionHeader>
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <a
-            href="https://coachellavalley.gives"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="button heading is-rounded is-normal is-primary has-text-weight-bold"
-          >
-            Help Those in Need Today
-          </a>
-        </div>
       </div>
     </Section>
   );
