@@ -17,7 +17,7 @@ function HeroSection2(props) {
           size={1}
           spaced={true}
           className="has-text-centered"
-        ></SectionHeader>
+        />
       </div>
     </Section>
   );

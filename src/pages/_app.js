@@ -1,8 +1,9 @@
 import React from "react";
+import App from "next/app";
+import { DataProvider } from "../components/DataProvider";
+import "./../util/analytics.js";
 import "./../styles/global-components.scss";
 import "./../styles/global.scss";
-import App from "next/app";
-import "./../util/analytics.js";
 
 class MyApp extends App {
   render() {
@@ -10,7 +11,9 @@ class MyApp extends App {
 
     return (
       <>
-        <Component {...pageProps} />
+        <DataProvider>
+          <Component {...pageProps} />
+        </DataProvider>
       </>
     );
   }

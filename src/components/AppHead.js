@@ -41,7 +41,7 @@ export default function AppHead() {
       <meta property="og:title" content={PAGE_TITLE} />
       <meta property="og:description" content={PAGE_DESCRIPTION} />
       <meta property="og:site_name" content={PAGE_TITLE} />
-      <meta property="og:url" content="https://www.covid19cv.info" />
+      <meta property="og:url" content="https://covid19cv.info" />
       <meta name="twitter:card" content="summary" />
       <meta name="twitter:title" content={PAGE_TITLE} />
       <meta name="twitter:description" content={PAGE_DESCRIPTION} />
